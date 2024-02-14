@@ -29,7 +29,6 @@ def main():
 
     root.mainloop()
 
-
 def handle_file(file):
     if file.endswith('.exe'):
         print('Found')
