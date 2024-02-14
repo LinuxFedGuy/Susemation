@@ -1,35 +1,30 @@
-import tkinter as tk
 from tkinter import messagebox, filedialog
-import os
 import subprocess
+import customtkinter as tk
+import os
 
 def check_sudo():
     return os.geteuid() == 0
+
+tk.set_appearance_mode('dark')
+tk.set_default_color_theme('green')
 
 def main():
     if not check_sudo():
         messagebox.showwarning("Susemation Warning", "Please run Susemation with sudo permissions.")
 
-    root = tk.Tk()
+    root = tk.CTk()
     root.title("Susemation")
-
-    # Dracula colors
-    dracula_bg = "#282a36"
-    dracula_fg = "#f8f8f2"
-    dracula_button_bg = "#44475a"
-    dracula_button_fg = "#f8f8f2"
-
-    root.configure(bg=dracula_bg)
 
     window_width = 400
     window_height = 200
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
 
-    label = tk.Label(root, text="Welcome to Susemation!", font=("Helvetica", 16), bg=dracula_bg, fg=dracula_fg)
+    label = tk.CTkLabel(root, text="Welcome to Susemation!", font=("Helvetica", 16))
     label.pack(pady=20)
 
-    button = tk.Button(root, text="Select File", command=select_file, bg=dracula_button_bg, fg=dracula_button_fg)
+    button = tk.CTkButton(root, text="Select File", command=select_file)
     button.pack()
 
     root.mainloop()
@@ -42,7 +37,7 @@ def handle_file(file):
             # Run the .exe file with Wine
             subprocess.run(['wine', file])
         except Exception as e:
-            tk.messagebox.showerror('Susemation Error!', e)
+            messagebox.showerror('Susemation Error!', e)
     elif file.endswith('.tar.xz'):
         print('Found')
         try:
@@ -50,8 +45,9 @@ def handle_file(file):
 
             # Define the destination directory and extract tar.xz 
             subprocess.run(['tar', '--extract', '-xJf', file, '-C', file_directory])
+            messagebox.showinfo('Susemation Info', 'tar.xz file extracted to dir: ' + file_directory)
         except Exception as e:
-            tk.messagebox.showerror('Susemation Error!', str(e))
+            messagebox.showerror('Susemation Error!', str(e))
     else:
         print('None')
 
