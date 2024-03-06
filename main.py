@@ -1,7 +1,10 @@
-from tkinter import messagebox, filedialog
+from tkinter import messagebox, filedialog, ttk
 import subprocess
 import customtkinter as tk
 import os
+import zipfile
+import rarfile
+import threading
 
 def check_sudo():
     return os.geteuid() == 0
@@ -37,23 +40,35 @@ def handle_file(file):
             subprocess.run(['wine', file])
         except Exception as e:
             messagebox.showerror('Susemation Error!', e)
-    elif file.endswith('.tar.xz'):
+    elif file.endswith(('.tar.xz', '.zip', '.rar')):
         print('Found')
         try:
             file_directory = os.path.dirname(file)
 
-            # Define the destination directory and extract tar.xz 
-            subprocess.run(['tar', '--extract', '-xJf', file, '-C', file_directory])
-            messagebox.showinfo('Susemation Info', 'tar.xz file extracted to dir: ' + file_directory)
+            if file.endswith('.tar.xz'):
+                # Extract tar.xz file
+                subprocess.run(['tar', '--extract', '-xJf', file, '-C', file_directory])
+            elif file.endswith('.zip'):
+                # Extract zip file
+                with zipfile.ZipFile(file, 'r') as zip_ref:
+                    zip_ref.extractall(file_directory)
+            elif file.endswith('.rar'):
+                # Extract rar file
+                with rarfile.RarFile(file, 'r') as rar_ref:
+                    rar_ref.extractall(file_directory)
+
+            messagebox.showinfo('Susemation Info', f'File extracted to dir: {file_directory}')
         except Exception as e:
             messagebox.showerror('Susemation Error!', str(e))
     else:
         print('None')
 
 def select_file():
-    file_path = filedialog.askopenfilename(title="Select a file on your System", filetypes=[("tar.xz files", ".tar.xz"), ("exe Files", ".exe")])
+    file_path = filedialog.askopenfilename(title="Select a file on your System", filetypes=[("tar.xz files", ".tar.xz"), ("zip files", ".zip"), ("rar files", ".rar"), ("exe Files", ".exe")])
     if file_path:
-        handle_file(file_path)
+        # Start a new thread for handling the file
+        thread = threading.Thread(target=handle_file, args=(file_path,))
+        thread.start()
 
 if __name__ == "__main__":
     main()
